@@ -75,6 +75,7 @@ for(;;){
     if($row1==null)break;
     $id=$row1["id"]; $codice=$row1["codice"]; $nome=$row1["nome"];
     $v=0; $sv="";
+    if($codice&256){$v+=41; $sv.="Sezione";}
     if($codice&1){$v+=54; $sv.="Socio";}
     if($codice&2){$v+=7.5; $sv.=",RRcartaceq";}
     if(($codice&32)||($codice&64))$v/=2;
