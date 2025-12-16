@@ -135,6 +135,9 @@ for(;;){
     $out.="<label><input type='checkbox' name='{$id}' id='{$id}_digitale' value=".sprintf("%d",1+32*$fam+64*$junior)." onchange=\"if(event.isTrusted && this.checked){{$cmd1}}\">Digitale </label>";
     $out.="<label><input type='checkbox' name='{$id}' id='{$id}_cartaceo' value=".sprintf("%d",1+2+32*$fam+64*$junior)." onchange=\"if(this.checked){{$cmd2}}\">Cartaceo </label>";
   }
+  else if($hh=="SEZ"){
+    $out.="<label><input type='checkbox' name='{$id}' id='{$id}_cartaceo' value=".sprintf("%d",1+256)." onchange=\"if(this.checked){{$cmd2}}\">Cartaceo </label>";
+  }
   if($hh=="RCL"){
     $out.="<label><input type='checkbox' name='{$id}' value=16>RadioClub </label>";
   }
@@ -162,8 +165,8 @@ for(let i=0;i<8;i++){
 }
 
 function aggiornaRiquadro(){
-  const valori={0:0,1:72,3:82,4:80,8:25,16:37,33:36,35:41,65:36,67:41,97:36,99:41,128:10};
-  const sede={0:0,1:54,3:61.5,4:80,8:25,16:27.75,33:27,35:30.75,65:27,67:30.75,97:27,99:30.75,128:10};
+  const valori={0:0,1:72,3:82,4:80,8:25,16:37,33:36,35:41,65:36,67:41,97:36,99:41,128:10,256:41};
+  const sede={0:0,1:54,3:61.5,4:80,8:25,16:27.75,33:27,35:30.75,65:27,67:30.75,97:27,99:30.75,128:10,256:41};
   const checked=document.querySelectorAll("input[type=checkbox]:checked");
   const altro=document.querySelectorAll("input[name$='_num']");
   let totale=0;
