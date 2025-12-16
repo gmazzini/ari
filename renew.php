@@ -136,7 +136,7 @@ for(;;){
     $out.="<label><input type='checkbox' name='{$id}' id='{$id}_cartaceo' value=".sprintf("%d",1+2+32*$fam+64*$junior)." onchange=\"if(this.checked){{$cmd2}}\">Cartaceo </label>";
   }
   else if($hh=="SEZ"){
-    $out.="<label><input type='checkbox' name='{$id}' id='{$id}_cartaceo' value=".sprintf("%d",1+256)." onchange=\"if(this.checked){{$cmd2}}\">Cartaceo </label>";
+    $out.="<label><input type='checkbox' name='{$id}' id='{$id}_cartaceo' value=".sprintf("%d",256)." onchange=\"if(this.checked){{$cmd2}}\">Cartaceo </label>";
   }
   if($hh=="RCL"){
     $out.="<label><input type='checkbox' name='{$id}' value=16>RadioClub </label>";
