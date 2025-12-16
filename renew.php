@@ -95,14 +95,14 @@ $query=mysqli_query($con,"select id,callsign,nome,thr,family,nascita from soci w
 for(;;){
   $row=mysqli_fetch_assoc($query);
   if($row==null)break;
-  $sez=(substr($row["callsign"],0,2)=="IQ")?1:0;
+  $iq=(substr($row["callsign"],0,2)=="IQ")?1:0;
   $fam=($row["family"]!=NULL)?1:0;
   $junior=($yy-(int)$row["nascita"]<=25)?1:0;
   $out=$id=$row["id"];
   preg_match_all('/[0-9]/',$row["callsign"],$mm);
   $zz=count($mm[0]);
   if($zz==1){
-    if($sez)$hh="SEZ";
+    if($iq)$hh="SEZ";
     else if($fam && !$junior)$hh="FAM";
     else if(!$fam && $junior)$hh="JUN";
     else if($fam && $junior)$hh="FJU";
