@@ -29,7 +29,7 @@ foreach(scandir($dir) as $f){
 }
 ?>
 
-<h1>Funzioni Soci v1.6</h1>
+<h1>Funzioni Soci v1.65</h1>
 <form method="post">
 <input name="sez"
   placeholder="Sezione (4 cifre oppure *XXX)"
