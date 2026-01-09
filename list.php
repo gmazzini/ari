@@ -46,6 +46,7 @@ textarea {
 <div class="contenuto">
 <?php
 include "ari_local.php";
+include "auth.php";
 $con=mysqli_connect($dbhost,$dbuser,$dbpassword,$dbname);
 mysqli_set_charset($con,'utf8mb4');
 $sez=trim($_POST['sez']); $cell=trim($_POST['cell']);
@@ -57,24 +58,8 @@ $row=mysqli_fetch_assoc($query);
 $backsez=$row["sezione"];
 mysqli_free_result($query);
 if($row["sezione"]==NULL){echo "Utente non esistente\n"; exit(0);}
-$otp=sprintf("%05d",rand(0,99999));
-echo "<span id='yyy'>Sezione $sez, Utente $cell<br>Invia via whatapp il codice $otp al numero di autenticazione 3770867586 entro 90 secondi\n</span>";
-ob_flush();
-flush();
+if(myauth($sez,$cell)==0){echo "OTP scaduto\n"; exit(0);}
 $epoch=time();
-$look=0;
-for($i=0;$i<90 && $look==0;$i++){
-  $fp=fopen("/home/www/data/auth/39".$cell,"r");
-  if($fp!=NULL){
-    $line=fgets($fp);
-    $vv=explode(",",$line);
-    if($vv[0]==$otp && $epoch-$vv[1]<90){$look=1; break;}
-    fclose($fp);
-  }
-  sleep(1);
-}
-if($look==0){echo "OTP scaduto\n"; exit(0);}
-
 $cr=0; if(substr($sez,0,2)=="**")$cr=1;
 echo "<script>document.getElementById('yyy').textContent = '';</script>";
 mysqli_query($con,"UPDATE autentica SET a_list=a_list+1,e_list=$epoch WHERE cellulare='$cell' and sezione='$backsez'");
