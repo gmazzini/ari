@@ -16,6 +16,10 @@ function myauth($sez,$cell){
     }
     sleep(1);
   }
+  if($look==0){
+    echo "<script>document.getElementById('yyy').innerHTML=\"<span style='color:red; font-weight:bold;'>OTP scaduto</span>\"; </script>";
+    ob_flush(); flush();
+  }
   return $look;
 }
 
