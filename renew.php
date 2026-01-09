@@ -59,7 +59,7 @@ $row=mysqli_fetch_assoc($query);
 $backsez=$row["sezione"];
 mysqli_free_result($query);
 if($row["sezione"]==NULL){echo "Utente non esistente\n"; exit(0);}
-if(myauth(sez,$cell)==0){echo "OTP scaduto\n"; exit(0);}
+if(myauth($sez,$cell)==0){echo "OTP scaduto\n"; exit(0);}
 $epoch=time();
 echo "<script>document.getElementById('yyy').textContent = '';</script>";
 mysqli_query($con,"UPDATE autentica SET a_renew=a_renew+1,e_renew=$epoch WHERE cellulare='$cell' and sezione='$backsez'");
