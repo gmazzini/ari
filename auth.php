@@ -1,6 +1,6 @@
 <?php
 
-function myauth($sez,cell){
+function myauth($sez,$cell){
   $otp=sprintf("%05d",rand(0,99999));
   echo "<span id='yyy'>Sezione $sez, Utente $cell<br>Invia via whatapp il codice $otp al numero di autenticazione 3770867586 entro 90 secondi\n</span>";
   ob_flush(); flush();
