@@ -7,7 +7,7 @@ function myauth($sez,$cell){
   $epoch=time();
   $look=0;
   for($i=0;$i<90 && $look==0;$i++){
-    $fp=fopen("/home/www/data/auth/39".$cell,"r");
+    $fp=fopen("/run/myauth/39".$cell,"r");
     if($fp!=NULL){
       $line=fgets($fp);
       $vv=explode(",",$line);
