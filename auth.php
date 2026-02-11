@@ -8,7 +8,7 @@ function myauth($sez,$cell){
   $look=0;
   for($i=0;$i<90 && $look==0;$i++){
     $fp=fopen("/run/myauth/39".$cell,"r");
-    if($fp!=NULL){
+    if($fp !== false){
       $line=fgets($fp);
       $vv=explode(",",$line);
       if($vv[0]==$otp && $epoch-$vv[1]<90){$look=1; break;}
