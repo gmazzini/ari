@@ -6,15 +6,21 @@ include "/home/www/info/ari_local.php";
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$con = mysqli_connect($dbhost, $dbuser, $dbpassword, $dbname);
+$con = mysqli_connect(
+    $dbhost,
+    $dbuser,
+    $dbpassword,
+    $dbname
+);
+
 mysqli_set_charset($con, "utf8mb4");
 
 
 function norm(string $input): ?string
 {
     /*
-     * Divide usando i separatori normalmente presenti
-     * tra numeri telefonici.
+     * Divide il campo usando i separatori normalmente presenti
+     * tra più numeri telefonici.
      */
     $parts = preg_split(
         '/\s*(?:\/+|\|+|\bor\b|\boppure\b)\s*/i',
@@ -25,8 +31,8 @@ function norm(string $input): ?string
 
     foreach ($parts as $p) {
         /*
-         * Conserva soltanto le cifre.
-         * Gli zeri iniziali non vengono rimossi.
+         * Conserva soltanto le cifre, mantenendo gli eventuali
+         * zeri iniziali.
          */
         $n = preg_replace('/\D+/', '', $p);
 
@@ -48,8 +54,8 @@ function norm(string $input): ?string
 
 
 /*
- * Converte una matricola nel formato AA-NNNN
- * nel formato interno AANNNN.
+ * Converte una matricola nel formato NN-NNNN
+ * nel formato interno NNNNNN.
  */
 function matricolaId(string $matricola): ?string
 {
@@ -79,6 +85,37 @@ function sezioneId(string $sezione): ?string
 }
 
 
+/*
+ * Ripristina gli eventuali zeri iniziali del CAP persi
+ * durante l'esportazione da Excel.
+ *
+ * Esempi:
+ *
+ * 167  -> 00167
+ * 4018 -> 04018
+ * 1100 -> 01100
+ */
+function normalizzaCap(string $cap): string
+{
+    $cap = trim($cap);
+
+    if (
+        $cap !== '' &&
+        ctype_digit($cap) &&
+        strlen($cap) <= 5
+    ) {
+        return str_pad(
+            $cap,
+            5,
+            '0',
+            STR_PAD_LEFT
+        );
+    }
+
+    return $cap;
+}
+
+
 function openFileOrFail(string $filename, string $mode)
 {
     $fp = fopen($filename, $mode);
@@ -96,7 +133,10 @@ function openFileOrFail(string $filename, string $mode)
 try {
     mysqli_begin_transaction($con);
 
-    mysqli_query($con, "DELETE FROM soci");
+    mysqli_query(
+        $con,
+        "DELETE FROM soci"
+    );
 
 
     /*
@@ -137,10 +177,7 @@ try {
     $fp = openFileOrFail("q5.csv", "r");
 
     /*
-     * Salta l'intestazione.
-     *
-     * L'ultimo parametro vuoto disabilita il vecchio carattere
-     * di escape proprietario e rende la lettura CSV più corretta.
+     * Salta l'intestazione del CSV.
      */
     fgetcsv($fp, 0, ',', '"', '');
 
@@ -153,7 +190,7 @@ try {
         $record++;
 
         /*
-         * Salta le righe completamente vuote.
+         * Salta eventuali record completamente vuoti.
          */
         if (
             count($oo) === 1 &&
@@ -214,8 +251,8 @@ try {
         }
 
         /*
-         * Evita che un'eventuale matricola duplicata nel CSV
-         * provochi un errore SQL fatale.
+         * Evita errori SQL se nel file compare due volte
+         * la stessa matricola.
          */
         if (isset($seenIds[$id])) {
             fprintf(
@@ -233,13 +270,21 @@ try {
 
         $nome = trim((string)$oo[1]);
 
+        /*
+         * Composizione dell'indirizzo.
+         */
+        $via = trim((string)$oo[2]);
+        $cap = normalizzaCap((string)$oo[3]);
+        $citta = trim((string)$oo[4]);
+        $provincia = trim((string)$oo[5]);
+
         $indirizzo = implode(
             "-",
             [
-                trim((string)$oo[2]),
-                trim((string)$oo[3]),
-                trim((string)$oo[4]),
-                trim((string)$oo[5])
+                $via,
+                $cap,
+                $citta,
+                $provincia
             ]
         );
 
@@ -250,10 +295,16 @@ try {
         $nascita = (int)((float)$oo[8]);
 
         /*
-         * Il codice fiscale può contenere accidentalmente una virgola.
-         * Conserviamo soltanto la prima parte, come nel programma originale.
+         * Conserva la prima parte del codice fiscale nel caso
+         * contenga accidentalmente una virgola.
          */
-        $vv = str_getcsv((string)$oo[9], ',', '"', '');
+        $vv = str_getcsv(
+            (string)$oo[9],
+            ',',
+            '"',
+            ''
+        );
+
         $cf = str_replace(
             ' ',
             '',
@@ -276,13 +327,17 @@ try {
             );
 
             /*
-             * Non scartiamo il socio: lasciamo la sezione vuota.
+             * Il socio viene comunque importato lasciando
+             * vuota la sezione.
              */
             $sezione = '';
         }
 
         $voto = (
-            strcasecmp(trim((string)$oo[15]), 'Si') === 0
+            strcasecmp(
+                trim((string)$oo[15]),
+                'Si'
+            ) === 0
         ) ? 1 : 0;
 
         $q2 = trim((string)$oo[17]);
@@ -309,6 +364,7 @@ try {
         );
 
         mysqli_stmt_execute($insertSocio);
+
         $importati++;
     }
 
@@ -337,6 +393,9 @@ try {
 
     $fp = openFileOrFail("q3.csv", "r");
 
+    /*
+     * Salta l'intestazione.
+     */
     fgetcsv($fp, 0, ',', '"', '');
 
     $record = 1;
@@ -377,7 +436,9 @@ try {
         );
 
         mysqli_stmt_execute($updateThr);
-        $thrAggiornati += mysqli_stmt_affected_rows($updateThr);
+
+        $thrAggiornati +=
+            mysqli_stmt_affected_rows($updateThr);
     }
 
     fclose($fp);
@@ -394,9 +455,6 @@ try {
 
     echo "--- FAMILY\n";
 
-    /*
-     * Evita il segno '+' iniziale quando family è vuoto.
-     */
     $updateFamily = mysqli_prepare(
         $con,
         "
@@ -417,11 +475,12 @@ try {
 
     while (($line = fgets($fp)) !== false) {
         /*
-         * Sono interessanti soltanto le righe che iniziano con:
+         * Vengono considerate soltanto le righe che iniziano con:
          *
          * 000032        100511
          *
-         * cioè matricola del capofamiglia e matricola del familiare.
+         * cioè matricola del capofamiglia e matricola
+         * del familiare.
          */
         if (
             !preg_match(
@@ -448,7 +507,9 @@ try {
         );
 
         mysqli_stmt_execute($updateFamily);
-        $famiglieAggiornate += mysqli_stmt_affected_rows($updateFamily);
+
+        $famiglieAggiornate +=
+            mysqli_stmt_affected_rows($updateFamily);
 
         /*
          * Aggiunge il familiare alla scheda del capofamiglia.
@@ -462,7 +523,9 @@ try {
         );
 
         mysqli_stmt_execute($updateFamily);
-        $famiglieAggiornate += mysqli_stmt_affected_rows($updateFamily);
+
+        $famiglieAggiornate +=
+            mysqli_stmt_affected_rows($updateFamily);
     }
 
     fclose($fp);
@@ -489,4 +552,3 @@ try {
 }
 
 mysqli_close($con);
-
